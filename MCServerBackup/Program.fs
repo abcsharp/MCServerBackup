@@ -10,10 +10,31 @@ type Form1(interval) as it =
     let mutable currentTicks = 0
     let timer = new Timer(Interval = 1000)
 
-    let label1 = new Label(Text = "設定時間:" + interval.ToString() + "秒", Location = Point(10, 15), Size = Size(160, 15))
-    let label2 = new Label(Text = "次のバックアップまで:" + interval.ToString() + "秒", Location = Point(10, 35), Size = Size(160, 15))
-    let deleteAllButton = new Button(Text = "全てのバックアップを削除", Location = Point(10, 55), Size = Size(175, 23))
-    let deleteAllWithoutRecentButton = new Button(Text = "最新以外のバックアップを削除", Location = Point(10, 87), Size = Size(175, 23))
+    let label1 =
+        new Label(
+            Text = "設定時間:" + interval.ToString() + "秒",
+            Location = Point(10, 15),
+            Size = Size(160, 15))
+    let label2 =
+        new Label(
+            Text = "次のバックアップまで:" + interval.ToString() + "秒",
+            Location = Point(10, 35),
+            Size = Size(160, 15))
+    let backupNowButton =
+        new Button(
+            Text = "今すぐバックアップを作成する",
+            Location = Point(10, 55),
+            Size = Size(175, 23))
+    let deleteAllButton =
+        new Button(
+            Text = "全てのバックアップを削除",
+            Location = Point(10, 87),
+            Size = Size(175, 23))
+    let deleteAllWithoutRecentButton =
+        new Button(
+            Text = "最新以外のバックアップを削除",
+            Location = Point(10, 119),
+            Size = Size(175, 23))
 
     let targetDir = Environment.CurrentDirectory + "\\backup"
 
@@ -25,7 +46,7 @@ type Form1(interval) as it =
         source.GetDirectories()
         |> Array.iter (fun dir -> CopyDirectory dir.FullName <| dest.FullName + "\\" + dir.Name)
 
-    let CreateBackup () =
+    let CreateBackup() =
         let now = DateTime.Now
         let dirInfo =
             String.Format(targetDir + "\\world-{0:D4}-{1:D2}-{2:D2}-{3:D2}-{4:D2}", now.Year, now.Month, now.Day, now.Hour, now.Minute)
@@ -37,11 +58,14 @@ type Form1(interval) as it =
 
     do
         if Directory.Exists targetDir |> not then Directory.CreateDirectory targetDir |> ignore
-        it.Text <- "MCBackup"
+        it.Text <- "MCServerBackup"
         it.FormBorderStyle <- FormBorderStyle.FixedSingle
-        it.Size <- Size(200, 150)
+        it.MinimizeBox <- false
+        it.MaximizeBox <- false
+        it.Size <- Size(200, 200)
         it.Controls.Add label1
         it.Controls.Add label2
+        it.Controls.Add backupNowButton
         it.Controls.Add deleteAllButton
         it.Controls.Add deleteAllWithoutRecentButton
         currentTicks <- backupInterval
@@ -53,6 +77,9 @@ type Form1(interval) as it =
                 if currentTicks = 0 then
                     CreateBackup()
                     currentTicks <- backupInterval)
+        |> ignore
+        backupNowButton.Click
+        |> Observable.subscribe (fun _ -> CreateBackup())
         |> ignore
         deleteAllButton.Click
         |> Observable.subscribe
