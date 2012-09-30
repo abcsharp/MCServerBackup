@@ -2,6 +2,7 @@
 open System.Windows.Forms
 open System.Drawing
 open System.IO
+open System.Reflection
 
 type Form1(interval) as it =
     inherit Form()
@@ -58,9 +59,10 @@ type Form1(interval) as it =
 
     do
         if Directory.Exists targetDir |> not then Directory.CreateDirectory targetDir |> ignore
-        it.Text <- "MCServerBackup"
+        let resMan = new System.Resources.ResourceManager("Resource", Assembly.GetExecutingAssembly())
+        it.Icon <- downcast resMan.GetObject("app")
+        it.Text <- "MCBackup"
         it.FormBorderStyle <- FormBorderStyle.FixedSingle
-        it.MinimizeBox <- false
         it.MaximizeBox <- false
         it.Size <- Size(200, 200)
         it.Controls.Add label1
